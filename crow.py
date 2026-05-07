@@ -254,19 +254,20 @@ def fuzzy_match(needle: str | None, haystack: str, _check_conflicting: list[str]
 if fuzzy_match(action, "generate"):
     conf.generate()
 elif fuzzy_match(action, "update"):
-    subprocess.call(f"sh {conf.update_script}")
+    subprocess.run(["sh", conf.update_script])
 elif fuzzy_match(action, "pull"):
-    subprocess.call(f"cd {conf.compose_file.parent} && sudo docker compose pull && sudo docker compose up -d {'--build' if len(sys.argv) > 2 and (sys.argv[2] == '-b' or sys.argv[2] == '--build') else ''} && cd -")
+    subprocess.run(["sudo", "docker", "compose", "pull"], cwd=conf.compose_file.parent)
+    subprocess.run(["sudo", "docker", "compose", "up", "-d", "--build" if len(sys.argv) > 2 and (sys.argv[2] == "-b" or sys.argv[2] == "--build") else ""], cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "up"):
-    subprocess.call(f"cd {conf.compose_file.parent} && sudo docker compose up -d {'--build' if len(sys.argv) > 2 and (sys.argv[2] == '-b' or sys.argv[2] == '--build') else ''} && cd -")
+    subprocess.run(["sudo", "docker", "compose", "up", "-d", "--build" if len(sys.argv) > 2 and (sys.argv[2] == "-b" or sys.argv[2] == "--build") else ""], cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "down"):
-    subprocess.call(f"cd {conf.compose_file.parent} && sudo docker compose down && cd -")
+    subprocess.run(["sudo", "docker", "compose", "down"], cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "logs"):
-    subprocess.call(f"cd {conf.compose_file.parent} && sudo docker compose logs -fn {int(sys.argv[2]) if len(sys.argv) > 2 else 100} && cd -")
+    subprocess.run(["sudo", "docker", "compose", "logs", "-fn", str(int(sys.argv[2]) if len(sys.argv) > 2 else 100)], cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "exec") and len(sys.argv) > 2:
-    subprocess.call(f"sudo docker exec -it {sys.argv[2]} {sys.argv[3] if len(sys.argv) > 3 else 'bash'}")
+    subprocess.run(["sudo", "docker", "exec", "-it", sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "bash"])
 elif fuzzy_match(action, "ps"):
-    subprocess.call("sudo docker ps")
+    subprocess.run(["sudo", "docker", "ps"])
 else:
   print(f"Usage: {sys.argv[0]} generate\n"
         f"       {sys.argv[0]} update\n"
