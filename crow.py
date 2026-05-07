@@ -257,9 +257,9 @@ elif fuzzy_match(action, "update"):
     subprocess.run(["sh", conf.update_script])
 elif fuzzy_match(action, "pull"):
     subprocess.run(["sudo", "docker", "compose", "pull"], cwd=conf.compose_file.parent)
-    subprocess.run(["sudo", "docker", "compose", "up", "-d", "--build" if len(sys.argv) > 2 and (sys.argv[2] == "-b" or sys.argv[2] == "--build") else ""], cwd=conf.compose_file.parent)
+    subprocess.run(list(filter(bool, ["sudo", "docker", "compose", "up", "-d", "--build" if len(sys.argv) > 2 and (sys.argv[2] == "-b" or sys.argv[2] == "--build") else ""])), cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "up"):
-    subprocess.run(["sudo", "docker", "compose", "up", "-d", "--build" if len(sys.argv) > 2 and (sys.argv[2] == "-b" or sys.argv[2] == "--build") else ""], cwd=conf.compose_file.parent)
+    subprocess.run(list(filter(bool, ["sudo", "docker", "compose", "up", "-d", "--build" if len(sys.argv) > 2 and (sys.argv[2] == "-b" or sys.argv[2] == "--build") else ""])), cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "down"):
     subprocess.run(["sudo", "docker", "compose", "down"], cwd=conf.compose_file.parent)
 elif fuzzy_match(action, "logs"):
