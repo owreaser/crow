@@ -92,11 +92,11 @@ class DCConf:
                 self.containers.append(DCContainer(data, id))
 
     def generate(self):
-        compose: dict = {}
+        compose: dict = { "services": {}}
         update_script = ""
         nginx = ""
         for i in self.containers:
-            compose |= i.generate_compose()
+            compose["services"] |= i.generate_compose()["services"]
             update_script += i.generate_update_script() or ""
             nginx += i.generate_nginx() or ""
 
