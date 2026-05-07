@@ -127,7 +127,7 @@ class DCContainer:
         self.git_pull: bool = "git_pull" in data and bool(data["git_pull"])
         self.port: list[str] | Literal["host"] = ("host" if data["port"] == "host" else (data["port"] if isinstance(data["port"], list) else [data["port"] if isinstance(data["port"], str) else f"{data['port']}:{data['port']}"])) if "port" in data and data["port"] else []
         self.dirs: dict[str, str] = data["dirs"] if "dirs" in data and data["dirs"] else {}
-        self.env: dict = data["dirs"] if "dirs" in data and data["dirs"] else {}
+        self.env: dict = data["env"] if "env" in data and data["env"] else {}
 
         self.nginx: dict | None = {
             "host": data["nginx"]["host"],
