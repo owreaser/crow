@@ -2,11 +2,12 @@
 
 import json
 import os
-import sys
 import subprocess
-import yaml
+import sys
 from pathlib import Path
 from typing import Literal
+
+import yaml
 
 DEBUG = False
 CROW_CMD = "crow"
@@ -105,13 +106,16 @@ class DCConf:
 
         with open(self.compose_file, "w") as f:
             json.dump(compose, f)
+            print(f"crow: wrote docker-compose to {self.compose_file}")
 
         with open(self.nginx_file, "w") as f:
             f.write(nginx)
+            print(f"crow: wrote nginx conf to {self.nginx_file}")
 
         with open(self.update_script, "w") as f:
             f.write(update_script + f"cd {self.compose_file.parent} && {CROW_CMD} pull -b && cd -\n")
-        os.chmod(self.update_script, 0o755)
+            os.chmod(self.update_script, 0o755)
+            print(f"crow: wrote update script to {self.update_script}")
 
 class DCContainer:
     def __init__(self, data: dict, id: str):
@@ -123,6 +127,7 @@ class DCContainer:
         self.git_pull: bool = "git_pull" in data and bool(data["git_pull"])
         self.port: list[str] | Literal["host"] = ("host" if data["port"] == "host" else (data["port"] if isinstance(data["port"], list) else [data["port"] if isinstance(data["port"], str) else f"{data['port']}:{data['port']}"])) if "port" in data and data["port"] else []
         self.dirs: dict[str, str] = data["dirs"] if "dirs" in data and data["dirs"] else {}
+        self.env: dict = data["dirs"] if "dirs" in data and data["dirs"] else {}
 
         self.nginx: dict | None = {
             "host": data["nginx"]["host"],
@@ -160,6 +165,9 @@ class DCContainer:
             compose_data["volumes"] = []
             for src, dst in self.dirs.items():
                 compose_data["volumes"].append(f"{src}:{dst}")
+
+        if self.env:
+            compose_data["environment"] = self.env
 
         return { "services": { self.id: compose_data }}
 
@@ -211,12 +219,11 @@ class DCContainer:
     def generate_nginx(self) -> str | None:
         if not self.nginx or not (self.nginx["http"] or self.nginx["https"]):
             return
-
         return (self._generate_nginx_http() if self.nginx["http"] else "") + (self._generate_nginx_https() if self.nginx["https"] else "")
 
     def generate_update_script(self) -> str | None:
         if self.git_pull and self.build:
-            return f"cd {self.build} && git submodule init && git pull --recurse-submodules && cd -\n"
+            return f"cd {self.build}\ngit stash && git submodule init && git pull --recurse-submodules git stash pop\ncd -\n"
 
 conf = DCConf(ROOT[0] / "crow.conf")
 action = len(sys.argv) > 1 and sys.argv[1].lower() or None

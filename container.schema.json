@@ -53,6 +53,8 @@
           }
         },
 
+        "env": { "type": "object" },
+
         "nginx": {
           "type": "object",
           "required": ["host"],

@@ -68,6 +68,10 @@ container_name:
   dirs:
     "/path/to/source-dir": "/path/to/container-dir"
 
+  # Environment variables
+  env:
+    ENVIRONMENT_VARIABLE: value
+
   # Optionally generate an additional nginx config
   nginx:
     host: "domain.example.com"
