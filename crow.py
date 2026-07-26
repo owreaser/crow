@@ -125,6 +125,7 @@ class DCContainer:
         self.image: Literal[False] | str = "image" in data and data["image"]
         self.dns_override: bool = "dns_override" in data and bool(data["dns_override"])
         self.git_pull: bool = "git_pull" in data and bool(data["git_pull"])
+        self.pre_script: str | None = data["pre_script"] if "pre_script" in data and data["pre_script"] else None
         self.port: list[str] | Literal["host"] = ("host" if data["port"] == "host" else (data["port"] if isinstance(data["port"], list) else [data["port"] if isinstance(data["port"], str) else f"{data['port']}:{data['port']}"])) if "port" in data and data["port"] else []
         self.dirs: dict[str, str] = data["dirs"] if "dirs" in data and data["dirs"] else {}
         self.env: dict = data["env"] if "env" in data and data["env"] else {}
@@ -135,7 +136,7 @@ class DCContainer:
             "https": "https" in data["nginx"] and data["nginx"]["https"],
             "ssl_conf": data["nginx"]["ssl_conf"] if "ssl_conf" in data["nginx"] else None,
             "port": data["nginx"]["port"] if "port" in data["nginx"] else None,
-            "static": data["nginx"]["static"] if "static" in data["nginx"] else None
+            "static": data["nginx"]["static"] if "static" in data["nginx"] else {}
         } if "nginx" in data and data["nginx"] else None
 
     def generate_compose(self) -> dict:
@@ -222,8 +223,15 @@ class DCContainer:
         return (self._generate_nginx_http() if self.nginx["http"] else "") + (self._generate_nginx_https() if self.nginx["https"] else "")
 
     def generate_update_script(self) -> str | None:
+        output = ""
+
+        if self.pre_script:
+            output += f"sh {self.pre_script}\n"
+
         if self.git_pull and self.build:
-            return f"cd {self.build}\ngit stash && git submodule init && git pull --recurse-submodules git stash pop\ncd -\n"
+            output += f"cd {self.build}\ngit stash && git submodule init && git pull --recurse-submodules git stash pop\ncd -\n"
+
+        return output or None
 
 conf = DCConf(ROOT[0] / "crow.conf")
 action = len(sys.argv) > 1 and sys.argv[1].lower() or None

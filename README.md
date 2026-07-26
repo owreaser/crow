@@ -58,6 +58,9 @@ container_name:
   git_pull: false
   git_pull: "only" # Go into the directory specified under the build option but don't build, just pull, for example if there's some static site served only with nginx and no backend.
 
+  # Run this script before building/git pulling/etc.
+  pre_script: "/path/to/script.sh"
+
   # Specify the port(s) to expose on the docker container
   port: 1234
   port: "1234:1234"
